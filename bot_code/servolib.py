@@ -54,7 +54,8 @@ class continuousservo:
 	_objs = []	# Registry to keep track of all continuousservo objects
 
 
-	def __init__(self, pin, freq = 50, minduty = 700, maxduty = 2300):
+	#def __init__(self, pin, freq = 50, minduty = 1000, maxduty = 1800, zerooffset = 5):
+	def __init__(self, pin, freq = 50, minduty = 1200, maxduty = 1860, zerooffset = 5):
 
 		self._pin = pin 			# Pin number
 		self._freq = freq 			# PWM frequency
@@ -65,6 +66,7 @@ class continuousservo:
 		self._runinittime = 0 			# Time at which servo was started
 		self._speed = 0 			# Servo speed
 		self._isnewtime = False			# Whether or not a new run time was set
+		self._zerooffset  = zerooffset
 
 
 		# Make the Pin Object
@@ -97,8 +99,14 @@ class continuousservo:
 	def speed(self, newspeed):
 		zeroposition = (self._maxduty + self._minduty) / 2
 		additionalposition = (self._maxduty - self._minduty) / 2 * newspeed / 100
-		conv = self._freq / 1000000 * 1023
-		self._duty = int(conv*(zeroposition + additionalposition))
+		if additionalposition > 0:
+			offset = self._zerooffset
+		elif additionalposition < 0:
+			offset = -self._zerooffset
+		else:
+			offset = 0
+		conv = self._freq / 1000000 * 1024
+		self._duty = int(conv*(zeroposition + additionalposition))+offset
 		self._speed = newspeed
 		self._isnewtime = True
 
